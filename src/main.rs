@@ -2,7 +2,7 @@
 
 use basicmethod::BasicMethod;
 
-enum Division {
+pub enum Division {
     Marketing,
     It,
     Finance,
@@ -22,11 +22,17 @@ struct Sample {
 
 
 fn main() {
-    let s = Sample::new(23, "Natalia".to_string(), 33, Division::It);
+    let mut s = Sample::new(23, "Natalia".to_string(), 33, Division::It);
     let i = Sample::info();
 
+    println!("{}", s.get_name());
+    s.set_name("Master Yi".to_string());
+    println!("{}", s.get_name());
+
     println!("{i}");
+
     for (f, t) in Sample::fields() {
         println!("{}-> {}", f, t);
     }
 }
+
