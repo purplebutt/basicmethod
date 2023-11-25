@@ -1,0 +1,29 @@
+use basicmethod::BasicMethod;
+
+#[derive(BasicMethod)]
+/// A struct to create dog, cat or others animal
+struct Animal {
+    #[only="get"] name: String,
+    #[only="set"] age: u16,
+    sound: String,
+}
+
+#[test] fn test1() {
+    let dog = Animal::new("Micho".into(), 8, "Woof".into());
+
+    assert_eq!("Micho", dog.get_name().as_str());
+    assert_eq!("Woof", dog.get_sound().as_str());
+}
+
+#[test] fn test2() {
+    let mut dog = Animal::new("Micho".into(), 8, "Woof".to_string());
+    
+    dog.set_age(15);
+    dog.set_sound("goof".into());
+
+    assert_eq!("Micho", dog.get_name().as_str());
+    assert_eq!(15, dog.age);
+    assert_eq!("goof", dog.get_sound().as_str());
+    assert_eq!("A struct to create dog, cat or others animal", Animal::info());
+}
+
