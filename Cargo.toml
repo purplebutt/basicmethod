@@ -2,6 +2,11 @@
 name = "basicmethod"
 version = "0.1.0"
 edition = "2021"
+description = "Add constructor, get and set method using derive macro"
+author = "Cheries Mewengkang<mcheries@yahoo.com>"
+license = "MIT or Apache"
+readme = "README.md"
+keywords = ["utility", "proc_macro", "derive_macro", "auto_methods"]
 
 [lib]
 proc_macro = true
