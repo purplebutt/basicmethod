@@ -44,11 +44,22 @@ pub fn extract_attr(attrs: &Vec<syn::Attribute>) -> Option<(String, String)> {
     } else { None }
 }
 
+/// extract FieldsUnnamed for tuple struct
+pub fn extract_unfield(unfield: syn::FieldsUnnamed) -> syn::punctuated::Punctuated<syn::Field, syn::token::Comma> {
+    let syn::FieldsUnnamed { unnamed, .. } = unfield;
+    unnamed
+}
+
 pub fn root_extract(input: DeriveInput) -> (Vec<syn::Attribute>, syn::Visibility, syn::Ident, syn::Data)  {
     let DeriveInput { attrs, vis, ident, data, .. } = input;
     (attrs, vis, ident, data) 
 }
 
+
+// functions below is not use yet but maybe
+// will be use on the future version
+
+#[allow(dead_code)]
 pub fn extract_fields(data: syn::Data) -> Option<syn::Fields> {
     if let syn::Data::Struct(syn::DataStruct { fields, .. }) = data {
         return Some(fields)
@@ -56,6 +67,7 @@ pub fn extract_fields(data: syn::Data) -> Option<syn::Fields> {
     None
 }
 
+#[allow(dead_code)]
 pub fn extract_fields_names(fields: syn::Fields) -> Option<syn::punctuated::Punctuated<syn::Field, syn::token::Comma>> {
     let syn::Fields::Named(syn::FieldsNamed{ named, .. }) = fields else { return None };
     Some(named)

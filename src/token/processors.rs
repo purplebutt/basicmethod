@@ -92,3 +92,72 @@ pub fn info(attrs: &Vec<syn::Attribute>, vis: syn::Visibility) -> TokenStream2 {
     } else { quote!() }
 }
 
+// unnamed or tuple struct
+pub fn unamed_field(punc: &Punc, _vis: syn::Visibility) -> impl Iterator<Item = TokenStream2> + '_ {
+    punc.iter().map(|f| {
+        match &f.ty {
+            syn::Type::Path(typepath) => {
+                let sgmnts = &typepath.path.segments[0];
+                let ty = &sgmnts.ident;
+                quote!(stringify!(#ty))
+            }
+            _ => quote!()
+        } 
+    })
+}
+
+pub fn set_methods_unnamed(punc: &Punc, vis: syn::Visibility) -> impl Iterator<Item = TokenStream2> + '_ {
+    let mut idx = syn::Index::from(0);
+    punc.iter().map(move |f| {
+        let x = extract_attr(&f.attrs);
+        if let Some((name, value)) = x {
+            if name.as_str() == "exclude" || (name.as_str() == "only" && value.as_str() != "set") {
+                return quote!()
+            } 
+        }
+        match &f.ty {
+            syn::Type::Path(typepath) => {
+                let sgmnts = &typepath.path.segments[0];
+                let ty = &sgmnts.ident;
+                let methodname = syn::Ident::new(&format!("set_{}", ty.to_string()), ty.span());
+                let result = quote!{
+                    #[allow(non_snake_case)]
+                    #vis fn #methodname(&mut self, value: #ty) {
+                        self.#idx = value
+                    }
+                };
+                idx.index += 1;
+                result
+            }
+            _ => quote!()
+        } 
+    })
+}
+
+pub fn get_methods_unnamed(punc: &Punc, vis: syn::Visibility) -> impl Iterator<Item = TokenStream2> + '_ {
+    let mut idx = syn::Index::from(0);
+    punc.iter().map(move |f| {
+        let x = extract_attr(&f.attrs);
+        if let Some((name, value)) = x {
+            if name.as_str() == "exclude" || (name.as_str() == "only" && value.as_str() != "get") {
+                return quote!()
+            } 
+        }
+        match &f.ty {
+            syn::Type::Path(typepath) => {
+                let sgmnts = &typepath.path.segments[0];
+                let ty = &sgmnts.ident;
+                let methodname = syn::Ident::new(&format!("get_{}", ty.to_string()), ty.span());
+                let result = quote!{
+                    #[allow(non_snake_case)]
+                    #vis fn #methodname(&self) -> &#ty {
+                        &self.#idx
+                    }
+                };
+                idx.index += 1;
+                result
+            }
+            _ => quote!()
+        } 
+    })
+}
