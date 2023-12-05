@@ -43,9 +43,9 @@ fn main() {
         println!("{}", tf)
     }
 
-    u.set_i32(20);
-    u.set_String("Love you".to_string());
+    u.set_i32_0(20);
+    u.set_String_1("Love you".to_string());
 
-    println!("{} {}", u.get_i32(), u.get_String());
+    println!("{} {}", u.get_i32_0(), u.get_String_1());
 }
 

@@ -3,8 +3,8 @@ mod token;
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 use quote::quote;
-use token::{extract_unfield, set_methods_unnamed, get_methods_unnamed};
-use crate::token::{new_args, tup_args, set_val, set_methods, get_methods, info, root_extract, get_vis_pub, unamed_field};
+use token::{extract_unfield, set_methods_unnamed, get_methods_unnamed, enum_variants, from_trait};
+use crate::token::{new_args, tup_args, set_val, set_methods, get_methods, info, root_extract, get_vis_pub, unamed_field, is_enum_field_unit};
 
 #[proc_macro_derive(BasicMethod, attributes(only,exclude))]
 pub fn basic_method_derive(input: TokenStream) -> TokenStream {
@@ -70,7 +70,40 @@ pub fn basic_method_derive(input: TokenStream) -> TokenStream {
                 }
             }.into()
         }
-        syn::Data::Enum(_) => panic!("Enum is not supported. Only struct allowed!"),
+        syn::Data::Enum(dataenum) => {
+            let variants = enum_variants(&dataenum.variants);
+            let from_trait = from_trait(&dataenum.variants);
+            let is_unit = is_enum_field_unit(&dataenum.variants);
+            if is_unit {
+                return quote!{
+                    impl #ident {
+                        #vispub fn variants() -> ::std::vec::Vec<&'static str> {
+                            let mut v = vec![];
+                            #(v.push(#variants));*;
+                            v
+                        }
+                    }
+                    impl ::std::convert::From<&str> for #ident {
+                        fn from(value: &str) -> Self {
+                            match value {
+                                #(#from_trait),*,
+                                _ => panic!("Can not create '{}' from '{}'", stringify!(#ident), value)
+                            }
+                        }
+                    }
+                }.into();
+            } else {
+                return quote!{
+                    impl #ident {
+                        #vispub fn variants() -> ::std::vec::Vec<&'static str> {
+                            let mut v = vec![];
+                            #(v.push(#variants));*;
+                            v
+                        }
+                    }
+                }.into()
+            }
+        },
         syn::Data::Union(_) => panic!("Union is not supported. Only struct allowed!"),
     }
 }

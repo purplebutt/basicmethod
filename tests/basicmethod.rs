@@ -27,3 +27,26 @@ struct Animal {
     assert_eq!("A struct to create dog, cat or others animal", Animal::info());
 }
 
+
+#[derive(BasicMethod)]
+/// Unit struct
+struct Unit;
+
+#[test] fn test3() {
+    assert_eq!("Unit struct", Unit::info());
+}
+
+#[derive(BasicMethod)]
+/// Tuple struct
+struct User(u32, String);
+
+#[test] fn test4() {
+    let mut user = User(11, "Robert".to_string());
+
+    assert_eq!("Tuple struct", User::info());
+    assert_eq!(11u32, *user.get_u32());
+    
+    user.set_String("William".to_string());
+    assert_eq!("William", user.get_String());
+}
+

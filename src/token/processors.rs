@@ -2,6 +2,7 @@ use quote::quote;
 use super::{extractor::extract_attr, extract_doc};
 
 type Punc = syn::punctuated::Punctuated<syn::Field, syn::token::Comma>;
+type Punc2 = syn::punctuated::Punctuated<syn::Variant, syn::token::Comma>;
 type TokenStream2 = proc_macro2::TokenStream;
 
 pub fn get_vis_pub() -> syn::Visibility {
@@ -94,12 +95,15 @@ pub fn info(attrs: &Vec<syn::Attribute>, vis: syn::Visibility) -> TokenStream2 {
 
 // unnamed or tuple struct
 pub fn unamed_field(punc: &Punc, _vis: syn::Visibility) -> impl Iterator<Item = TokenStream2> + '_ {
-    punc.iter().map(|f| {
+    let mut idx = 0;
+    punc.iter().map(move |f| {
         match &f.ty {
             syn::Type::Path(typepath) => {
                 let sgmnts = &typepath.path.segments[0];
                 let ty = &sgmnts.ident;
-                quote!(stringify!(#ty))
+                let newident = syn::Ident::new(&format!("{}_{}", ty.to_string(), idx), ty.span());
+                idx += 1;
+                quote!(stringify!(#newident))
             }
             _ => quote!()
         } 
@@ -119,7 +123,7 @@ pub fn set_methods_unnamed(punc: &Punc, vis: syn::Visibility) -> impl Iterator<I
             syn::Type::Path(typepath) => {
                 let sgmnts = &typepath.path.segments[0];
                 let ty = &sgmnts.ident;
-                let methodname = syn::Ident::new(&format!("set_{}", ty.to_string()), ty.span());
+                let methodname = syn::Ident::new(&format!("set_{}_{}", ty.to_string(), idx.index), ty.span());
                 let result = quote!{
                     #[allow(non_snake_case)]
                     #vis fn #methodname(&mut self, value: #ty) {
@@ -147,7 +151,7 @@ pub fn get_methods_unnamed(punc: &Punc, vis: syn::Visibility) -> impl Iterator<I
             syn::Type::Path(typepath) => {
                 let sgmnts = &typepath.path.segments[0];
                 let ty = &sgmnts.ident;
-                let methodname = syn::Ident::new(&format!("get_{}", ty.to_string()), ty.span());
+                let methodname = syn::Ident::new(&format!("get_{}_{}", ty.to_string(), idx.index), ty.span());
                 let result = quote!{
                     #[allow(non_snake_case)]
                     #vis fn #methodname(&self) -> &#ty {
@@ -159,5 +163,31 @@ pub fn get_methods_unnamed(punc: &Punc, vis: syn::Visibility) -> impl Iterator<I
             }
             _ => quote!()
         } 
+    })
+}
+
+pub fn is_enum_field_unit(variants: &Punc2) -> bool {
+    for f in variants {
+        let syn::Fields::Unit = f.fields else {
+            return false
+        };
+    }
+    true
+}
+
+pub fn enum_variants(variants: &Punc2) -> impl Iterator<Item = TokenStream2> + '_ {
+    variants.iter().map(|f| {
+        let ident = &f.ident.to_string();
+        quote!(#ident)
+    })
+}
+
+pub fn from_trait(variants: &Punc2) -> impl Iterator<Item = TokenStream2> + '_ {
+    variants.iter().map(|f| {
+        let ident = &f.ident;
+        let name = &f.ident.to_string();
+        quote!{
+            #name => Self::#ident
+        }
     })
 }
