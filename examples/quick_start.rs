@@ -36,9 +36,9 @@ fn demo2() {
     for field in Player::fields() {
         println!("{}", field)
     }
-    kowi.set_String("Jokowido".to_string());
-    kowi.set_u8(64);
-    println!("{} {}", kowi.get_String(), kowi.get_u8());
+    kowi.set_String_0("Jokowido".to_string());
+    kowi.set_u8_1(64);
+    println!("{} {}", kowi.get_String_0(), kowi.get_u8_1());
 }
 
 fn main() {

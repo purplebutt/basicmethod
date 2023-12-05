@@ -44,9 +44,9 @@ struct User(u32, String);
     let mut user = User(11, "Robert".to_string());
 
     assert_eq!("Tuple struct", User::info());
-    assert_eq!(11u32, *user.get_u32());
+    assert_eq!(11u32, *user.get_u32_0());
     
-    user.set_String("William".to_string());
-    assert_eq!("William", user.get_String());
+    user.set_String_1("William".to_string());
+    assert_eq!("William", user.get_String_1());
 }
 
