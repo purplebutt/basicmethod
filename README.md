@@ -1,13 +1,16 @@
 # basicmethod
 **Add constructor, get and set method using derive macro
+
+* What's new in v.0.1.1
+New method get_mut now available
+
 - This crates contains derive macro that add:
-*Constructor - new method
-*Getter - get method for each struct field
-*Setter - set method for each struct field
-*Info - info method to print struct documentation
-*Fields - fields method that return Vec<(&str, &str)> of fields
+*Constructor - new method 
+*Getter - get method for each struct field 
+*Setter - set method for each struct field 
+*Info - info method to print struct documentation 
+*Fields - fields method that return Vec<(&str, &str)> of fields 
 **Support for struct, unit-struct and tuple-struct
-**enum is not supported
 
 ## Examples - quick start
 ```rust
@@ -49,55 +52,27 @@ fn demo2() {
     for field in Player::fields() {
         println!("{}", field)
     }
-    kowi.set_String("Jokowido".to_string());
-    kowi.set_u8(64);
-    println!("{} {}", kowi.get_String(), kowi.get_u8());
+    kowi.set_String_0("Jokowido".to_string());
+    kowi.set_u8_1(64);
+    println!("{} {}", kowi.get_String_0(), kowi.get_u8_1());
+}
+
+#[derive(BasicMethod)]
+struct Demo {
+    val: i32
+}
+
+fn demo3() {
+    let mut v = Demo::new(10);
+    let mutv = v.get_val_mut();
+    *mutv += 5;
+    assert_eq!(15, *v.get_val());
 }
 
 fn main() {
     demo1();
     demo2();
-}
-```
-
-**Helper attributes
-- #[only="get"] -> will generate get method only
-- #[only="set"] -> will generate set method only
-- #[exclude] -> will not generate get nor set method
-
-## Examples - using helper attributes
-```rust
-// src/main.rs
-use basicmethod::BasicMethod;
-
-pub enum Division {
-    Marketing, IT, Finance, Other
-}
-
-#[derive(BasicMethod)]
-#[allow(unused)]
-/// Sample documentation
-struct Sample {
-    #[only="get"] id: i32,          // support only get method
-    #[exclude] name: String,        // exclude - will not have get nor set method
-    #[only="set"] age: u8,          // support only set method 
-    division: Division              // support get and set method
-}
-
-fn main() {
-    let mut s = Sample::new(12, "Fika".to_string(), 27, Division::Finance);
-
-    // ===valid
-    let _id = s.get_id();
-    s.set_age(30);
-    s.set_division(Division::IT);
-    let _div = s.get_division();
-
-    // ===invalid
-    // s.set_id(58);
-    // s.set_name("Tino".to_string());
-    // let name = s.get_name();
-    // let age = s.get_age();
+    demo3();
 }
 ```
 

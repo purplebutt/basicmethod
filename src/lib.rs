@@ -3,7 +3,7 @@ mod token;
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 use quote::quote;
-use token::{extract_unfield, set_methods_unnamed, get_methods_unnamed, enum_variants, from_trait};
+use token::{extract_unfield, set_methods_unnamed, get_methods_unnamed, enum_variants, from_trait, get_methods_mut};
 use crate::token::{new_args, tup_args, set_val, set_methods, get_methods, info, root_extract, get_vis_pub, unamed_field, is_enum_field_unit};
 
 #[proc_macro_derive(BasicMethod, attributes(only,exclude))]
@@ -23,6 +23,7 @@ pub fn basic_method_derive(input: TokenStream) -> TokenStream {
 
             let set_methods = set_methods(&named, vispub.clone());
             let get_methods = get_methods(&named, vispub.clone());
+            let get_methods_mut = get_methods_mut(&named, vispub.clone());
             let info = info(&attrs, vispub.clone());
         
             return quote!{
@@ -38,6 +39,7 @@ pub fn basic_method_derive(input: TokenStream) -> TokenStream {
                     }
                     #(#set_methods)*
                     #(#get_methods)*
+                    #(#get_methods_mut)*
                 }
             }.into()
         }
@@ -55,6 +57,7 @@ pub fn basic_method_derive(input: TokenStream) -> TokenStream {
             let fields = unamed_field(&punc, vispub.clone());
             let set_methods = set_methods_unnamed(&punc, vispub.clone());
             let get_methods = get_methods_unnamed(&punc, vispub.clone());
+            let get_methods_mut = get_methods_mut(&punc, vispub.clone());
             let info = info(&attrs, vispub.clone());
         
             return quote!{
@@ -67,6 +70,7 @@ pub fn basic_method_derive(input: TokenStream) -> TokenStream {
                     }
                     #(#set_methods)*
                     #(#get_methods)*
+                    #(#get_methods_mut)*
                 }
             }.into()
         }

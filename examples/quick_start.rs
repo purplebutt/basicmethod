@@ -41,7 +41,20 @@ fn demo2() {
     println!("{} {}", kowi.get_String_0(), kowi.get_u8_1());
 }
 
+#[derive(BasicMethod)]
+struct Demo {
+    val: i32
+}
+
+fn demo3() {
+    let mut v = Demo::new(10);
+    let mutv = v.get_val_mut();
+    *mutv += 5;
+    assert_eq!(15, *v.get_val());
+}
+
 fn main() {
     demo1();
     demo2();
+    demo3();
 }

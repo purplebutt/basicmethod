@@ -82,6 +82,26 @@ pub fn get_methods(punc: &Punc, vis: syn::Visibility) -> impl Iterator<Item = To
     })
 }
 
+pub fn get_methods_mut(punc: &Punc, vis: syn::Visibility) -> impl Iterator<Item = TokenStream2> + '_ {
+    punc.iter().map(move |f| {
+        if let Some(id) = &f.ident {
+            let x = extract_attr(&f.attrs);
+            if let Some((name, value)) = x {
+                if name.as_str() == "exclude" || (name.as_str() == "only" && value.as_str() != "get") {
+                    return quote!()
+                } 
+            }
+            let methodname = syn::Ident::new(&format!("get_{}_mut", id.to_string()), id.span());
+            let ty = &f.ty;
+            quote!{
+                #vis fn #methodname(&mut self) -> &mut #ty {
+                    &mut self.#id
+                }
+            }
+        } else { quote!() }
+    })
+}
+
 pub fn info(attrs: &Vec<syn::Attribute>, vis: syn::Visibility) -> TokenStream2 {
     if let Some(doctxt) = extract_doc(attrs) {
         quote!{
@@ -191,3 +211,4 @@ pub fn from_trait(variants: &Punc2) -> impl Iterator<Item = TokenStream2> + '_ {
         }
     })
 }
+
