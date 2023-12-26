@@ -12,11 +12,10 @@ enum Color {
 
 
 fn main() {
-    let _color = Color::Red;
-    let x = Color::variants();
+    let colors = Color::variants();
 
-    for i in x {
-        println!("{i}")
+    for c in colors {
+        println!("{c}")
     }
 
     let blue: Color = "Blue".into();

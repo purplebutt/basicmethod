@@ -1,6 +1,6 @@
 [package]
 name = "basicmethod"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Add constructor, get and set method using derive macro"
 author = "Cheries Mewengkang<mcheries@yahoo.com>"

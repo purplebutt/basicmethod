@@ -1,5 +1,7 @@
 use quote::quote;
-use super::{extractor::extract_attr, extract_doc};
+use crate::token::extract_type_name;
+
+use super::{extractor::extract_attr, extract_doc, helper::{is_number, inc_dec, inc_dec_unnamed}};
 
 type Punc = syn::punctuated::Punctuated<syn::Field, syn::token::Comma>;
 type Punc2 = syn::punctuated::Punctuated<syn::Variant, syn::token::Comma>;
@@ -102,6 +104,35 @@ pub fn get_methods_mut(punc: &Punc, vis: syn::Visibility) -> impl Iterator<Item 
     })
 }
 
+// if number add increment, decrement and dec_tozero method
+pub fn incdec_methods(punc: &Punc, vis: syn::Visibility) -> impl Iterator<Item = TokenStream2> + '_ {
+    punc.iter().map(move |f| {
+        if let Some(id) = &f.ident {
+            let ty = &f.ty;
+            let type_str = extract_type_name(ty.clone());
+            if is_number(&type_str) {
+                let x = extract_attr(&f.attrs);
+                if let Some((name, value)) = x {
+                    if name.as_str() == "exclude" || (name.as_str() == "only" && value.as_str() != "inc") {
+                        return quote!()
+                    } 
+                }
+                inc_dec(id, ty, &vis)
+                // let methodname = syn::Ident::new(&format!("inc_{}", id.to_string()), id.span());
+                // quote!{
+                //     /// Update the old value with old value + value, returning the newly updated
+                //     /// value
+                //     /// If the old value is 5, and value is 3, it'll be updated to 8.
+                //     #vis fn #methodname(&mut self, value: #ty) -> #ty {
+                //         self.#id += value;
+                //         self.#id
+                //     }
+                // }
+            } else { quote!() }
+        } else { quote!() }
+    })
+}
+
 pub fn info(attrs: &Vec<syn::Attribute>, vis: syn::Visibility) -> TokenStream2 {
     if let Some(doctxt) = extract_doc(attrs) {
         quote!{
@@ -155,6 +186,43 @@ pub fn set_methods_unnamed(punc: &Punc, vis: syn::Visibility) -> impl Iterator<I
             }
             _ => quote!()
         } 
+    })
+}
+
+pub fn incdec_methods_unnamed(punc: &Punc, vis: syn::Visibility) -> impl Iterator<Item = TokenStream2> + '_ {
+    let mut idx = 0;
+    punc.iter().map(move |f| {
+        idx += 1;
+        let type_str = extract_type_name(f.ty.clone());
+        if is_number(&type_str) {
+            let x = extract_attr(&f.attrs);
+            if let Some((name, value)) = x {
+                if name.as_str() == "exclude" || (name.as_str() == "only" && value.as_str() != "inc") {
+                    return quote!()
+                } 
+            }
+            match &f.ty {
+                syn::Type::Path(typepath) => {
+                    let idx = syn::Index::from(idx-1);
+                    let sgmnts = &typepath.path.segments[0];
+                    let ty = &sgmnts.ident;
+                    inc_dec_unnamed(&idx, ty, &vis)
+                    // let methodname = syn::Ident::new(&format!("inc_{}_{}", ty.to_string(), idx.index), ty.span());
+                    // let result = quote!{
+                    //     #[allow(non_snake_case)]
+                    //     /// Update the old value with old value + value, returning the newly updated
+                    //     /// value
+                    //     /// If the old value is 5, and value is 3, it'll be updated to 8.
+                    //     #vis fn #methodname(&mut self, value: #ty) -> #ty {
+                    //         self.#idx += value;
+                    //         self.#idx
+                    //     }
+                    // };
+                    // result
+                }
+                _ => quote!()
+            } 
+        } else { quote!() }
     })
 }
 

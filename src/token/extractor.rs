@@ -73,3 +73,8 @@ pub fn extract_fields_names(fields: syn::Fields) -> Option<syn::punctuated::Punc
     Some(named)
 }
 
+pub fn extract_type_name(ty: syn::Type) -> String {
+    let syn::Type::Path(tpath) = ty else { return "".to_string(); };
+    let Some(path_segment) = tpath.path.segments.first() else { return "".to_string() };
+    path_segment.ident.to_string()
+}
